@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>Discord Drawing RPC</Name>
+    <Version>1.0.0</Version>
+    <Title>Discord Drawing RPC Installer</Title>
+    <Publisher>TheGameratorT</Publisher>
+    <StartMenuDir>Discord Drawing RPC</StartMenuDir>
+    <TargetDir>@ApplicationsDir@/DiscordDrawRPC</TargetDir>
+    <AllowNonAsciiCharacters>true</AllowNonAsciiCharacters>
+    <AllowSpaceInPath>true</AllowSpaceInPath>
+    <WizardStyle>Modern</WizardStyle>
+    <WizardDefaultWidth>800</WizardDefaultWidth>
+    <WizardDefaultHeight>480</WizardDefaultHeight>
+    <InstallerApplicationIcon>icon</InstallerApplicationIcon>
+    <InstallerWindowIcon>icon.png</InstallerWindowIcon>
+</Installer>

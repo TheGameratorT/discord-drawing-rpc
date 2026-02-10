@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(DiscordDrawRPC VERSION 1.0.0 LANGUAGES CXX)
+project(discord-drawing-rpc VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -26,22 +26,23 @@ target_link_libraries(discord_common
 )
 
 # Discord RPC Daemon
-add_executable(DiscordDrawRPCDaemon
+add_executable(discord-drawing-rpc-daemon
     src/daemon/main.cpp
     src/daemon/DiscordRPCDaemon.cpp
     src/daemon/DiscordRPC.cpp
 )
 
 if(WIN32)
-    target_sources(DiscordDrawRPCDaemon PRIVATE resources/app_daemon.rc)
+    target_sources(discord-drawing-rpc-daemon PRIVATE resources/app_daemon.rc)
+    set_target_properties(discord-drawing-rpc-daemon PROPERTIES OUTPUT_NAME "DiscordDrawingRPCDaemon")
 endif()
 
-target_link_libraries(DiscordDrawRPCDaemon
+target_link_libraries(discord-drawing-rpc-daemon
     discord_common
 )
 
 # Discord RPC GUI
-add_executable(DiscordDrawRPC
+add_executable(discord-drawing-rpc
     src/gui/main.cpp
     src/gui/MainWindow.cpp
     src/gui/SettingsDialog.cpp
@@ -52,46 +53,74 @@ add_executable(DiscordDrawRPC
 )
 
 if(WIN32)
-    target_sources(DiscordDrawRPC PRIVATE resources/app_gui.rc)
+    target_sources(discord-drawing-rpc PRIVATE resources/app_gui.rc)
+    set_target_properties(discord-drawing-rpc PROPERTIES OUTPUT_NAME "DiscordDrawingRPC")
 endif()
 
-target_link_libraries(DiscordDrawRPC
+target_link_libraries(discord-drawing-rpc
     discord_common
 )
 
 # Discord RPC Tray
-add_executable(DiscordDrawRPCTray
+add_executable(discord-drawing-rpc-tray
     src/tray/main.cpp
     src/tray/TrayIcon.cpp
     resources.qrc
 )
 
 if(WIN32)
-    target_sources(DiscordDrawRPCTray PRIVATE resources/app_tray.rc)
+    target_sources(discord-drawing-rpc-tray PRIVATE resources/app_tray.rc)
+    set_target_properties(discord-drawing-rpc-tray PROPERTIES OUTPUT_NAME "DiscordDrawingRPCTray")
 endif()
 
-target_link_libraries(DiscordDrawRPCTray
+target_link_libraries(discord-drawing-rpc-tray
     discord_common
     Qt6::Core
     Qt6::Widgets
 )
 if(WIN32)
     # Windows: Hide console for GUI applications
-    set_target_properties(DiscordDrawRPC PROPERTIES WIN32_EXECUTABLE TRUE)
-    set_target_properties(DiscordDrawRPCTray PROPERTIES WIN32_EXECUTABLE TRUE)
+    set_target_properties(discord-drawing-rpc PROPERTIES WIN32_EXECUTABLE TRUE)
+    set_target_properties(discord-drawing-rpc-tray PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 
 # Install targets
-install(TARGETS DiscordDrawRPCDaemon DiscordDrawRPC DiscordDrawRPCTray
+install(TARGETS discord-drawing-rpc-daemon discord-drawing-rpc discord-drawing-rpc-tray
     RUNTIME DESTINATION bin
 )
+install(TARGETS discord_common
+    LIBRARY DESTINATION lib
+)
+
+# Install Linux desktop files and icons
+if(UNIX AND NOT APPLE)
+    install(FILES resources/linux/discord-drawing-rpc.desktop
+        DESTINATION share/applications
+    )
+    install(FILES resources/linux/discord-drawing-rpc-tray.desktop
+        DESTINATION share/applications
+    )
+    # Install systemd user service (optional)
+    install(FILES resources/linux/discord-drawing-rpc-daemon.service
+        DESTINATION lib/systemd/user
+        OPTIONAL
+    )
+    # Install icon (assuming icon.png exists in root)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/icon.png")
+        install(FILES icon.png
+            DESTINATION share/icons/hicolor/256x256/apps
+            RENAME discord-drawing-rpc.png
+        )
+    endif()
+endif()
+
 
 # Deploy to dist folder with DLLs
 set(DIST_DIR "${CMAKE_BINARY_DIR}/dist")
 
 # Create custom target to deploy executables with dependencies
 add_custom_target(deploy ALL
-    DEPENDS DiscordDrawRPCDaemon DiscordDrawRPC DiscordDrawRPCTray
+    DEPENDS discord-drawing-rpc-daemon discord-drawing-rpc discord-drawing-rpc-tray
     COMMENT "Deploying executables and DLLs to dist folder..."
 )
 
@@ -99,9 +128,9 @@ add_custom_target(deploy ALL
 add_custom_command(TARGET deploy POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${DIST_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:discord_common> ${DIST_DIR}/
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:DiscordDrawRPCDaemon> ${DIST_DIR}/
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:DiscordDrawRPC> ${DIST_DIR}/
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:DiscordDrawRPCTray> ${DIST_DIR}/
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:discord-drawing-rpc-daemon> ${DIST_DIR}/
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:discord-drawing-rpc> ${DIST_DIR}/
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:discord-drawing-rpc-tray> ${DIST_DIR}/
     COMMENT "Copying executables to dist..."
 )
 
@@ -116,11 +145,11 @@ if(WIN32)
         # Deploy Qt DLLs for each executable
         add_custom_command(TARGET deploy POST_BUILD
             COMMAND ${WINDEPLOYQT_EXECUTABLE} --no-translations --no-system-d3d-compiler --no-opengl-sw 
-                    "${DIST_DIR}/DiscordDrawRPC.exe"
+                    "${DIST_DIR}/DiscordDrawingRPC.exe"
             COMMAND ${WINDEPLOYQT_EXECUTABLE} --no-translations --no-system-d3d-compiler --no-opengl-sw 
-                    "${DIST_DIR}/DiscordDrawRPCTray.exe"
+                    "${DIST_DIR}/DiscordDrawingRPCTray.exe"
             COMMAND ${WINDEPLOYQT_EXECUTABLE} --no-translations --no-system-d3d-compiler --no-opengl-sw 
-                    "${DIST_DIR}/DiscordDrawRPCDaemon.exe"
+                    "${DIST_DIR}/DiscordDrawingRPCDaemon.exe"
             COMMENT "Deploying Qt dependencies..."
         )
     else()
@@ -130,9 +159,9 @@ if(WIN32)
     # Automatically copy all MinGW DLLs using ldd (only for MinGW builds)
     if(MINGW OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         add_custom_command(TARGET deploy POST_BUILD
-            COMMAND bash -c "ldd ${DIST_DIR}/DiscordDrawRPC.exe | grep /mingw64 | awk '{print $$3}' | xargs -I {} cp -u {} ${DIST_DIR}/ || true"
-            COMMAND bash -c "ldd ${DIST_DIR}/DiscordDrawRPCTray.exe | grep /mingw64 | awk '{print $$3}' | xargs -I {} cp -u {} ${DIST_DIR}/ || true"
-            COMMAND bash -c "ldd ${DIST_DIR}/DiscordDrawRPCDaemon.exe | grep /mingw64 | awk '{print $$3}' | xargs -I {} cp -u {} ${DIST_DIR}/ || true"
+            COMMAND bash -c "ldd ${DIST_DIR}/DiscordDrawingRPC.exe | grep /mingw64 | awk '{print $$3}' | xargs -I {} cp -u {} ${DIST_DIR}/ || true"
+            COMMAND bash -c "ldd ${DIST_DIR}/DiscordDrawingRPCTray.exe | grep /mingw64 | awk '{print $$3}' | xargs -I {} cp -u {} ${DIST_DIR}/ || true"
+            COMMAND bash -c "ldd ${DIST_DIR}/DiscordDrawingRPCDaemon.exe | grep /mingw64 | awk '{print $$3}' | xargs -I {} cp -u {} ${DIST_DIR}/ || true"
             COMMENT "Automatically copying all MinGW DLLs..."
         )
     endif()
@@ -158,6 +187,6 @@ add_custom_target(clean-all
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/dist"
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/packages"
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_SOURCE_DIR}/installer/packages/com.discorddrawrpc.app/data"
-    COMMAND ${CMAKE_COMMAND} -E remove "${CMAKE_BINARY_DIR}/DiscordDrawRPC-Setup.exe"
+    COMMAND ${CMAKE_COMMAND} -E remove "${CMAKE_BINARY_DIR}/DiscordDrawingRPC-Setup.exe"
     COMMENT "Cleaning all build artifacts, dist folder, packages, and installer data..."
 )

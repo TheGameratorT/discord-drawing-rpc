@@ -5,7 +5,7 @@
     <Title>Discord Drawing RPC Installer</Title>
     <Publisher>TheGameratorT</Publisher>
     <StartMenuDir>Discord Drawing RPC</StartMenuDir>
-    <TargetDir>@ApplicationsDir@/DiscordDrawRPC</TargetDir>
+    <TargetDir>@ApplicationsDir@/DiscordDrawingRPC</TargetDir>
     <AllowNonAsciiCharacters>true</AllowNonAsciiCharacters>
     <AllowSpaceInPath>true</AllowSpaceInPath>
     <WizardStyle>Modern</WizardStyle>

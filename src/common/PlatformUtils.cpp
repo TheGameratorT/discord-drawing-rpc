@@ -141,7 +141,11 @@ bool ProcessUtils::isGuiRunning() {
         return false;
     }
     
-    return isProcessRunningByName(pid, "DiscordDrawRPC");
+#ifdef _WIN32
+    return isProcessRunningByName(pid, "DiscordDrawingRPC");
+#else
+    return isProcessRunningByName(pid, "discord-drawing-rpc");
+#endif
 }
 
 bool ProcessUtils::isTrayRunning() {
@@ -157,11 +161,15 @@ bool ProcessUtils::isTrayRunning() {
         return false;
     }
     
-    return isProcessRunningByName(pid, "DiscordDrawRPCTray");
+#ifdef _WIN32
+    return isProcessRunningByName(pid, "DiscordDrawingRPCTray");
+#else
+    return isProcessRunningByName(pid, "discord-drawing-rpc-tray");
+#endif
 }
 
 bool ProcessUtils::isDaemonRunning() {
-    QString pidFile = Config::instance().getPidFilePath();
+    QString pidFile = Config::instance().getDaemonPidFilePath();
     qint64 pid = readPidFile(pidFile);
     
     if (pid <= 0) {
@@ -173,7 +181,24 @@ bool ProcessUtils::isDaemonRunning() {
         return false;
     }
     
-    return isProcessRunningByName(pid, "DiscordDrawRPCDaemon");
+#ifdef _WIN32
+    return isProcessRunningByName(pid, "DiscordDrawingRPCDaemon");
+#else
+    return isProcessRunningByName(pid, "discord-drawing-rpc-daemon");
+#endif
+}
+
+bool ProcessUtils::terminateProcessFromPidFile(const QString& pidFilePath) {
+    qint64 pid = readPidFile(pidFilePath);
+    
+    if (pid <= 0) {
+        return false;
+    }
+    
+    bool success = killProcess(pid);
+    QFile::remove(pidFilePath);
+    
+    return success;
 }
 
 } // namespace DiscordDrawRPC

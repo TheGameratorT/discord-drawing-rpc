@@ -39,9 +39,9 @@
    ```
 
 5. The executables will be generated in the build directory:
-   - `DiscordDrawRPC.exe` – Main GUI application
-   - `DiscordDrawRPCDaemon.exe` – Background daemon
-   - `DiscordDrawRPCTray.exe` – System tray application
+   - `DiscordDrawingRPC.exe` – Main GUI application
+   - `DiscordDrawingRPCDaemon.exe` – Background daemon
+   - `DiscordDrawingRPCTray.exe` – System tray application
 
 ## Building on Linux/macOS
 
@@ -75,9 +75,15 @@ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release ..
 
 After building, you can run the applications from the build directory:
 
-- Start the daemon first: `./DiscordDrawRPCDaemon`
-- Run the GUI: `./DiscordDrawRPC`
-- Or use the tray application: `./DiscordDrawRPCTray`
+**Linux/macOS:**
+- Start the daemon first: `./discord-drawing-rpc-daemon`
+- Run the GUI: `./discord-drawing-rpc`
+- Or use the tray application: `./discord-drawing-rpc-tray`
+
+**Windows:**
+- Start the daemon first: `./DiscordDrawingRPCDaemon.exe`
+- Run the GUI: `./DiscordDrawingRPC.exe`
+- Or use the tray application: `./DiscordDrawingRPCTray.exe`
 
 ## Installer
 

@@ -93,12 +93,7 @@ void MainWindow::initTrayIcon() {
     if (!enableTray) {
         // Stop tray if running
         if (ProcessUtils::isTrayRunning()) {
-            QString trayPidFile = config.getTrayPidFilePath();
-            qint64 pid = ProcessUtils::readPidFile(trayPidFile);
-            if (pid > 0) {
-                ProcessUtils::killProcess(pid);
-                QFile::remove(trayPidFile);
-            }
+            ProcessUtils::terminateProcessFromPidFile(config.getTrayPidFilePath());
         }
         return;
     }
@@ -114,7 +109,7 @@ void MainWindow::launchTrayProcess() {
         return;
     }
     
-    QString trayPath = getExecutablePath("discord_rpc_tray");
+    QString trayPath = getExecutablePath(ExecutableType::Tray);
     
     QProcess* process = new QProcess(this);
     
@@ -842,7 +837,7 @@ void MainWindow::startDaemon() {
         return;
     }
     
-    QString daemonPath = getExecutablePath("discord_rpc_daemon");
+    QString daemonPath = getExecutablePath(ExecutableType::Daemon);
     
     if (!QFile::exists(daemonPath)) {
         QMessageBox::critical(

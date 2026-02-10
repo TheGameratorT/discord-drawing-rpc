@@ -30,6 +30,9 @@ public:
     
     // Check if Daemon is running
     static bool isDaemonRunning();
+    
+    // Terminate process from PID file and clean up the file
+    static bool terminateProcessFromPidFile(const QString& pidFilePath);
 };
 
 } // namespace DiscordDrawRPC

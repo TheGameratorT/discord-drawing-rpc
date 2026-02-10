@@ -56,7 +56,7 @@ execute_process(
         --offline-only
         -c "${INSTALLER_DIR}/config/config.xml"
         -p "${INSTALLER_DIR}/packages"
-        "${OUTPUT_DIR}/DiscordDrawRPC-Setup.exe"
+        "${OUTPUT_DIR}/DiscordDrawingRPC-Setup.exe"
     WORKING_DIRECTORY "${INSTALLER_DIR}"
     RESULT_VARIABLE INSTALLER_RESULT
     OUTPUT_VARIABLE INSTALLER_OUTPUT
@@ -66,5 +66,5 @@ execute_process(
 if(NOT INSTALLER_RESULT EQUAL 0)
     message(FATAL_ERROR "Installer creation failed!\nOutput: ${INSTALLER_OUTPUT}\nError: ${INSTALLER_ERROR}")
 else()
-    message(STATUS "Installer created successfully: ${OUTPUT_DIR}/DiscordDrawRPC-Setup.exe")
+    message(STATUS "Installer created successfully: ${OUTPUT_DIR}/DiscordDrawingRPC-Setup.exe")
 endif()

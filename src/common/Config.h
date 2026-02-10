@@ -30,7 +30,7 @@ public:
     // Config file paths
     QString getConfigFilePath() const;
     QString getStateFilePath() const;
-    QString getPidFilePath() const;
+    QString getDaemonPidFilePath() const;
     QString getGuiPidFilePath() const;
     QString getTrayPidFilePath() const;
     QString getCacheFilePath() const;

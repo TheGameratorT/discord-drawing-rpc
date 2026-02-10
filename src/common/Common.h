@@ -12,6 +12,13 @@ namespace DiscordDrawRPC {
     constexpr bool IS_WINDOWS = false;
 #endif
 
+// Executable types
+enum class ExecutableType {
+    Daemon = 0,
+    Gui = 1,
+    Tray = 2
+};
+
 // Get platform-specific configuration and data directories
 struct PlatformDirs {
     QString configDir;
@@ -24,6 +31,6 @@ PlatformDirs getPlatformDirs();
 QString getExecutableDir();
 
 // Get path to another executable in the same directory
-QString getExecutablePath(const QString& name);
+QString getExecutablePath(ExecutableType type);
 
 } // namespace DiscordDrawRPC

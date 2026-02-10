@@ -147,7 +147,7 @@ void TrayIcon::showWindow() {
         return;
     }
     
-    QString guiPath = getExecutablePath("discord_rpc_gui");
+    QString guiPath = getExecutablePath(ExecutableType::Gui);
     
     QProcess* process = new QProcess(this);
     
@@ -168,7 +168,7 @@ void TrayIcon::showWindow() {
 }
 
 void TrayIcon::startDaemon() {
-    QString daemonPath = getExecutablePath("discord_rpc_daemon");
+    QString daemonPath = getExecutablePath(ExecutableType::Daemon);
     
     QProcess* process = new QProcess(this);
     
@@ -197,12 +197,11 @@ void TrayIcon::startDaemon() {
 }
 
 void TrayIcon::stopDaemon() {
-    QString pidFile = Config::instance().getPidFilePath();
+    QString pidFile = Config::instance().getDaemonPidFilePath();
     qint64 pid = ProcessUtils::readPidFile(pidFile);
     
     if (pid > 0 && ProcessUtils::isProcessRunning(pid)) {
-        ProcessUtils::killProcess(pid);
-        QFile::remove(pidFile);
+        ProcessUtils::terminateProcessFromPidFile(pidFile);
         
         m_trayIcon->showMessage(
             "Presence Stopped",
@@ -281,14 +280,14 @@ void TrayIcon::exitApp() {
     
     m_trayIcon->hide();
     
+    // Terminate daemon process if running
+    if (ProcessUtils::isDaemonRunning()) {
+        ProcessUtils::terminateProcessFromPidFile(Config::instance().getDaemonPidFilePath());
+    }
+    
     // Terminate GUI process if running
     if (ProcessUtils::isGuiRunning()) {
-        QString guiPidFile = Config::instance().getGuiPidFilePath();
-        qint64 pid = ProcessUtils::readPidFile(guiPidFile);
-        if (pid > 0) {
-            ProcessUtils::killProcess(pid);
-            QFile::remove(guiPidFile);
-        }
+        ProcessUtils::terminateProcessFromPidFile(Config::instance().getGuiPidFilePath());
     }
     
     // Clean up our PID file

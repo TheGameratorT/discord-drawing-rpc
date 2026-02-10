@@ -17,14 +17,14 @@ PlatformDirs getPlatformDirs() {
     QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QString localAppData = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
     
-    dirs.configDir = appData + "/discord-draw-rpc";
-    dirs.dataDir = localAppData + "/discord-draw-rpc";
+    dirs.configDir = appData + "/discord-drawing-rpc";
+    dirs.dataDir = localAppData + "/discord-drawing-rpc";
     
 #elif defined(__APPLE__)
     // macOS: Use Application Support
     QString appSupport = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    dirs.configDir = appSupport + "/discord-draw-rpc";
-    dirs.dataDir = appSupport + "/discord-draw-rpc";
+    dirs.configDir = appSupport + "/discord-drawing-rpc";
+    dirs.dataDir = appSupport + "/discord-drawing-rpc";
     
 #else
     // Linux/Unix: Use XDG Base Directory Specification
@@ -38,8 +38,8 @@ PlatformDirs getPlatformDirs() {
         dataHome = QDir::homePath() + "/.local/share";
     }
     
-    dirs.configDir = configHome + "/discord-draw-rpc";
-    dirs.dataDir = dataHome + "/discord-draw-rpc";
+    dirs.configDir = configHome + "/discord-drawing-rpc";
+    dirs.dataDir = dataHome + "/discord-drawing-rpc";
 #endif
     
     // Ensure directories exist
@@ -53,27 +53,25 @@ QString getExecutableDir() {
     return QCoreApplication::applicationDirPath();
 }
 
-QString getExecutablePath(const QString& name) {
+QString getExecutablePath(ExecutableType type) {
     QString exeDir = getExecutableDir();
     
 #ifdef _WIN32
-    // Windows: Map names to .exe files
-    QMap<QString, QString> exeNames;
-    exeNames["discord_rpc_daemon"] = "DiscordDrawRPCDaemon.exe";
-    exeNames["discord_rpc_gui"] = "DiscordDrawRPC.exe";
-    exeNames["discord_rpc_tray"] = "DiscordDrawRPCTray.exe";
-    
-    QString exeName = exeNames.value(name, name + ".exe");
-    return exeDir + "/" + exeName;
+    // Windows: Use PascalCase with .exe extension
+    static const char* const winExeNames[] = {
+        "DiscordDrawingRPCDaemon.exe",  // Daemon
+        "DiscordDrawingRPC.exe",         // Gui
+        "DiscordDrawingRPCTray.exe"      // Tray
+    };
+    return exeDir + "/" + winExeNames[static_cast<int>(type)];
 #else
-    // Unix/Linux/macOS
-    QMap<QString, QString> exeNames;
-    exeNames["discord_rpc_daemon"] = "DiscordDrawRPCDaemon";
-    exeNames["discord_rpc_gui"] = "DiscordDrawRPC";
-    exeNames["discord_rpc_tray"] = "DiscordDrawRPCTray";
-    
-    QString exeName = exeNames.value(name, name);
-    return exeDir + "/" + exeName;
+    // Unix/Linux/macOS: Use kebab-case
+    static const char* const unixExeNames[] = {
+        "discord-drawing-rpc-daemon",    // Daemon
+        "discord-drawing-rpc",           // Gui
+        "discord-drawing-rpc-tray"       // Tray
+    };
+    return exeDir + "/" + unixExeNames[static_cast<int>(type)];
 #endif
 }
 

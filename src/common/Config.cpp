@@ -11,7 +11,7 @@ Config::Config() {
     // Initialize with default values
     m_config["discord_client_id"] = "";
     m_config["imgur_client_id"] = "";
-    m_config["enable_tray_icon"] = false;
+    m_config["enable_tray_icon"] = true;
 }
 
 Config& Config::instance() {
@@ -27,7 +27,7 @@ QString Config::getStateFilePath() const {
     return getPlatformDirs().dataDir + "/state.json";
 }
 
-QString Config::getPidFilePath() const {
+QString Config::getDaemonPidFilePath() const {
     return getPlatformDirs().dataDir + "/daemon.pid";
 }
 

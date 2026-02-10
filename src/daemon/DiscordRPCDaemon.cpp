@@ -237,12 +237,12 @@ void DiscordRPCDaemon::handleCommand(const QJsonObject& stateData) {
 }
 
 void DiscordRPCDaemon::writePidFile() {
-    QString pidFile = Config::instance().getPidFilePath();
+    QString pidFile = Config::instance().getDaemonPidFilePath();
     ProcessUtils::writePidFile(pidFile, QCoreApplication::applicationPid());
 }
 
 void DiscordRPCDaemon::removePidFile() {
-    QString pidFile = Config::instance().getPidFilePath();
+    QString pidFile = Config::instance().getDaemonPidFilePath();
     QFile::remove(pidFile);
 }
 

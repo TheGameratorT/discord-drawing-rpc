@@ -95,21 +95,13 @@ install(TARGETS discord_common
 
 # Install Linux desktop files and icons
 if(UNIX AND NOT APPLE)
-    install(FILES resources/linux/discord-drawing-rpc.desktop
+    install(FILES resources/discord-drawing-rpc.desktop
         DESTINATION share/applications
     )
-    install(FILES resources/linux/discord-drawing-rpc-tray.desktop
-        DESTINATION share/applications
-    )
-    # Install systemd user service (optional)
-    install(FILES resources/linux/discord-drawing-rpc-daemon.service
-        DESTINATION lib/systemd/user
-        OPTIONAL
-    )
-    # Install icon (assuming icon.png exists in root)
+    # Install icon (512x512 original)
     if(EXISTS "${CMAKE_SOURCE_DIR}/icon.png")
         install(FILES icon.png
-            DESTINATION share/icons/hicolor/256x256/apps
+            DESTINATION share/icons/hicolor/512x512/apps
             RENAME discord-drawing-rpc.png
         )
     endif()

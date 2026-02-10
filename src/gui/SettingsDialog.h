@@ -21,6 +21,7 @@ private:
     QLineEdit* m_discordIdInput;
     QLineEdit* m_imgurIdInput;
     QCheckBox* m_enableTrayCheckbox;
+    QCheckBox* m_stopDaemonOnCloseCheckbox;
 };
 
 } // namespace DiscordDrawRPC

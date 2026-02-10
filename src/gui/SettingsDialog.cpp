@@ -33,6 +33,11 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     m_enableTrayCheckbox->setToolTip("Enable to minimize to system tray instead of closing");
     formLayout->addRow("Tray Icon:", m_enableTrayCheckbox);
     
+    // Stop Daemon on Close
+    m_stopDaemonOnCloseCheckbox = new QCheckBox("Stop daemon when closing GUI", this);
+    m_stopDaemonOnCloseCheckbox->setToolTip("Automatically stop the Discord presence daemon when closing the GUI window");
+    formLayout->addRow("Stop Daemon:", m_stopDaemonOnCloseCheckbox);
+    
     layout->addLayout(formLayout);
     
     // Help text
@@ -67,6 +72,7 @@ void SettingsDialog::loadCurrentSettings() {
     m_discordIdInput->setText(config.getValue("discord_client_id"));
     m_imgurIdInput->setText(config.getValue("imgur_client_id"));
     m_enableTrayCheckbox->setChecked(config.getConfig().value("enable_tray_icon").toBool());
+    m_stopDaemonOnCloseCheckbox->setChecked(config.getConfig().value("stop_daemon_on_close").toBool());
 }
 
 QJsonObject SettingsDialog::getSettings() const {
@@ -74,6 +80,7 @@ QJsonObject SettingsDialog::getSettings() const {
     settings["discord_client_id"] = m_discordIdInput->text().trimmed();
     settings["imgur_client_id"] = m_imgurIdInput->text().trimmed();
     settings["enable_tray_icon"] = m_enableTrayCheckbox->isChecked();
+    settings["stop_daemon_on_close"] = m_stopDaemonOnCloseCheckbox->isChecked();
     return settings;
 }
 

@@ -12,6 +12,7 @@ Config::Config() {
     m_config["discord_client_id"] = "";
     m_config["imgur_client_id"] = "";
     m_config["enable_tray_icon"] = true;
+    m_config["stop_daemon_on_close"] = false;
 }
 
 Config& Config::instance() {

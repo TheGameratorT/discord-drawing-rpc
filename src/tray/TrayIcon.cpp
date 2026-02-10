@@ -2,6 +2,7 @@
 #include "../common/Config.h"
 #include "../common/Common.h"
 #include "../common/PlatformUtils.h"
+#include "../common/DaemonIPC.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -11,11 +12,9 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QFont>
-#include <QFile>
-#include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
-#include <QDebug>
+#include <QThread>
 
 namespace DiscordDrawRPC {
 
@@ -112,17 +111,10 @@ void TrayIcon::createMenu() {
     
     m_menu->addSeparator();
     
-    // Quick actions
-    QAction* clearStatusAction = new QAction("Clear Discord Status", this);
-    connect(clearStatusAction, &QAction::triggered, this, &TrayIcon::clearStatus);
-    m_menu->addAction(clearStatusAction);
-    
-    m_menu->addSeparator();
-    
-    // Exit action
-    QAction* exitAction = new QAction("Exit", this);
-    connect(exitAction, &QAction::triggered, this, &TrayIcon::exitApp);
-    m_menu->addAction(exitAction);
+    // Quit action
+    QAction* quitAction = new QAction("Quit", this);
+    connect(quitAction, &QAction::triggered, this, &TrayIcon::exitApp);
+    m_menu->addAction(quitAction);
     
     m_trayIcon->setContextMenu(m_menu);
 }
@@ -197,12 +189,11 @@ void TrayIcon::startDaemon() {
 }
 
 void TrayIcon::stopDaemon() {
-    QString pidFile = Config::instance().getDaemonPidFilePath();
-    qint64 pid = ProcessUtils::readPidFile(pidFile);
+    if (!ProcessUtils::isDaemonRunning()) {
+        return;
+    }
     
-    if (pid > 0 && ProcessUtils::isProcessRunning(pid)) {
-        ProcessUtils::terminateProcessFromPidFile(pidFile);
-        
+    if (DaemonIPC::sendQuitCommand()) {
         m_trayIcon->showMessage(
             "Presence Stopped",
             "Discord RPC presence has been stopped.",
@@ -210,34 +201,6 @@ void TrayIcon::stopDaemon() {
             2000
         );
         updateTooltip();
-    }
-}
-
-void TrayIcon::clearStatus() {
-    QString stateFile = Config::instance().getStateFilePath();
-    
-    QJsonObject stateData;
-    stateData["command"] = "clear";
-    
-    QFile file(stateFile);
-    if (file.open(QIODevice::WriteOnly)) {
-        QJsonDocument doc(stateData);
-        file.write(doc.toJson());
-        file.close();
-        
-        m_trayIcon->showMessage(
-            "Status Cleared",
-            "Discord RPC status has been cleared.",
-            QSystemTrayIcon::Information,
-            2000
-        );
-    } else {
-        m_trayIcon->showMessage(
-            "Error",
-            "Failed to clear status",
-            QSystemTrayIcon::Critical,
-            3000
-        );
     }
 }
 
@@ -251,22 +214,11 @@ void TrayIcon::updateTooltip() {
     }
     
     // Add current status if available
-    QString stateFile = Config::instance().getStateFilePath();
-    QFile file(stateFile);
-    
-    if (file.open(QIODevice::ReadOnly)) {
-        QByteArray data = file.readAll();
-        file.close();
-        
-        QJsonDocument doc = QJsonDocument::fromJson(data);
-        if (!doc.isNull() && doc.isObject()) {
-            QJsonObject state = doc.object();
-            if (state.value("command").toString() == "update") {
-                QString details = state.value("details").toString();
-                if (!details.isEmpty()) {
-                    tooltip += "\n" + details;
-                }
-            }
+    QJsonObject state = DaemonIPC::readCurrentState();
+    if (state.value("command").toString() == "update") {
+        QString details = state.value("details").toString();
+        if (!details.isEmpty()) {
+            tooltip += "\n" + details;
         }
     }
     
@@ -280,9 +232,11 @@ void TrayIcon::exitApp() {
     
     m_trayIcon->hide();
     
-    // Terminate daemon process if running
+    // Gracefully stop daemon if running
     if (ProcessUtils::isDaemonRunning()) {
-        ProcessUtils::terminateProcessFromPidFile(Config::instance().getDaemonPidFilePath());
+        DaemonIPC::sendQuitCommand();
+        // Give daemon time to shut down gracefully
+        QThread::msleep(500);
     }
     
     // Terminate GUI process if running

@@ -27,7 +27,6 @@ private slots:
     void loadImage();
     void uploadToImgur();
     void updateDiscordStatus();
-    void clearDiscordStatus();
     void setStartTimeToNow();
     void onUrlChanged(const QString& text);
     void updateDaemonStatus();
@@ -36,6 +35,7 @@ private slots:
     void showSettings();
     void viewLogs();
     void showAbout();
+    void quitApplication();
     
 private:
     void initUi();
@@ -64,7 +64,6 @@ private:
     QPushButton* m_loadBtn;
     QPushButton* m_uploadBtn;
     QPushButton* m_updateBtn;
-    QPushButton* m_clearBtn;
     QPushButton* m_nowBtn;
     QPushButton* m_startDaemonBtn;
     QPushButton* m_stopDaemonBtn;

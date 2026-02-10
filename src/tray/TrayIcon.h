@@ -22,7 +22,6 @@ private slots:
     void showWindow();
     void startDaemon();
     void stopDaemon();
-    void clearStatus();
     void updateTooltip();
     void exitApp();
     

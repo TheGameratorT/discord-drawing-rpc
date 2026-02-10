@@ -19,6 +19,7 @@ add_library(discord_common SHARED
     src/common/Common.cpp
     src/common/Config.cpp
     src/common/PlatformUtils.cpp
+    src/common/DaemonIPC.cpp
 )
 
 target_link_libraries(discord_common

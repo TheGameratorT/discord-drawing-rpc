@@ -6,6 +6,7 @@
 #include "../common/Config.h"
 #include "../common/Common.h"
 #include "../common/PlatformUtils.h"
+#include "../common/DaemonIPC.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -123,22 +124,7 @@ void MainWindow::launchTrayProcess() {
 }
 
 void MainWindow::loadCurrentState() {
-    QString stateFile = Config::instance().getStateFilePath();
-    
-    QFile file(stateFile);
-    if (!file.open(QIODevice::ReadOnly)) {
-        return;
-    }
-    
-    QByteArray data = file.readAll();
-    file.close();
-    
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (doc.isNull() || !doc.isObject()) {
-        return;
-    }
-    
-    QJsonObject stateData = doc.object();
+    QJsonObject stateData = DaemonIPC::readCurrentState();
     
     // Only load if it's an update command
     if (stateData.value("command").toString() != "update") {
@@ -280,6 +266,10 @@ void MainWindow::initUi() {
     QMenu* fileMenu = menuBar->addMenu("&File");
     QAction* settingsAction = fileMenu->addAction("&Settings");
     connect(settingsAction, &QAction::triggered, this, &MainWindow::showSettings);
+    
+    fileMenu->addSeparator();
+    QAction* quitAction = fileMenu->addAction("&Quit");
+    connect(quitAction, &QAction::triggered, this, &MainWindow::quitApplication);
     
     QMenu* aboutMenu = menuBar->addMenu("&About");
     QAction* aboutQtAction = aboutMenu->addAction("&Qt");
@@ -515,7 +505,7 @@ void MainWindow::initUi() {
     // Action buttons
     controlsContainer->addSpacing(10);
     
-    m_updateBtn = new QPushButton("Update Status", this);
+    m_updateBtn = new QPushButton("Set Status", this);
     connect(m_updateBtn, &QPushButton::clicked, this, &MainWindow::updateDiscordStatus);
     m_updateBtn->setEnabled(false);
     m_updateBtn->setMinimumHeight(40);
@@ -536,22 +526,6 @@ void MainWindow::initUi() {
         "}"
     ).arg(DISCORD_BLUE, DISCORD_BLUE_HOVER, DARK_GRAY));
     controlsContainer->addWidget(m_updateBtn);
-    
-    m_clearBtn = new QPushButton("Clear Status", this);
-    connect(m_clearBtn, &QPushButton::clicked, this, &MainWindow::clearDiscordStatus);
-    m_clearBtn->setMinimumHeight(35);
-    m_clearBtn->setStyleSheet(QString(
-        "QPushButton {"
-        "    background-color: %1;"
-        "    color: white;"
-        "    padding: 8px;"
-        "    border-radius: 5px;"
-        "}"
-        "QPushButton:hover {"
-        "    background-color: %2;"
-        "}"
-    ).arg(DISCORD_RED, DISCORD_RED_HOVER));
-    controlsContainer->addWidget(m_clearBtn);
     
     // Status label
     controlsContainer->addSpacing(10);
@@ -875,31 +849,7 @@ void MainWindow::stopDaemon() {
         return;
     }
     
-    // Send quit command via state file
-    QString stateFile = Config::instance().getStateFilePath();
-    
-    // Read existing state first to preserve it
-    QJsonObject stateData;
-    QFile readFile(stateFile);
-    if (readFile.open(QIODevice::ReadOnly)) {
-        QByteArray data = readFile.readAll();
-        readFile.close();
-        
-        QJsonDocument doc = QJsonDocument::fromJson(data);
-        if (!doc.isNull() && doc.isObject()) {
-            stateData = doc.object();
-        }
-    }
-    
-    // Add quit command (preserving all other fields)
-    stateData["command"] = "quit";
-    
-    QFile file(stateFile);
-    if (file.open(QIODevice::WriteOnly)) {
-        QJsonDocument doc(stateData);
-        file.write(doc.toJson());
-        file.close();
-    }
+    DaemonIPC::sendQuitCommand();
     
     // Wait and check
     QTimer::singleShot(1000, this, [this]() {
@@ -924,14 +874,6 @@ void MainWindow::updateDiscordStatus() {
     
     qint64 startTime = m_startTimeInput->dateTime().toSecsSinceEpoch();
     
-    QJsonObject stateData;
-    stateData["command"] = "update";
-    stateData["large_image"] = url;
-    stateData["large_text"] = "Screenshot";
-    stateData["details"] = details.isEmpty() ? "Sharing a screenshot" : details;
-    stateData["state"] = state;
-    stateData["start"] = startTime;
-    
     // Check if daemon is running
     if (!ProcessUtils::isDaemonRunning()) {
         QMessageBox::StandardButton reply = QMessageBox::question(
@@ -947,15 +889,16 @@ void MainWindow::updateDiscordStatus() {
         }
     }
     
-    // Write state file
-    QString stateFile = Config::instance().getStateFilePath();
+    // Send update command
+    bool success = DaemonIPC::sendUpdateCommand(
+        url,
+        "Screenshot",
+        details.isEmpty() ? "Sharing a screenshot" : details,
+        state,
+        startTime
+    );
     
-    QFile file(stateFile);
-    if (file.open(QIODevice::WriteOnly)) {
-        QJsonDocument doc(stateData);
-        file.write(doc.toJson());
-        file.close();
-        
+    if (success) {
         m_statusLabel->setText("✅ Discord status updated!");
         QMessageBox::information(this, "Success", "Discord status updated!");
     } else {
@@ -964,22 +907,23 @@ void MainWindow::updateDiscordStatus() {
     }
 }
 
-void MainWindow::clearDiscordStatus() {
-    QJsonObject stateData;
-    stateData["command"] = "clear";
-    
-    QString stateFile = Config::instance().getStateFilePath();
-    
-    QFile file(stateFile);
-    if (file.open(QIODevice::WriteOnly)) {
-        QJsonDocument doc(stateData);
-        file.write(doc.toJson());
-        file.close();
-        
-        m_statusLabel->setText("Discord status cleared");
-    } else {
-        QMessageBox::critical(this, "Error", "Failed to clear status!");
+void MainWindow::quitApplication() {
+    // Stop daemon if running
+    if (ProcessUtils::isDaemonRunning()) {
+        stopDaemon();
+        QThread::msleep(500);
     }
+    
+    // Stop tray if running
+    if (ProcessUtils::isTrayRunning()) {
+        ProcessUtils::terminateProcessFromPidFile(Config::instance().getTrayPidFilePath());
+    }
+    
+    // Clean up PID file
+    QString guiPidFile = Config::instance().getGuiPidFilePath();
+    QFile::remove(guiPidFile);
+    
+    QApplication::quit();
 }
 
 void MainWindow::showSettings() {
@@ -1043,6 +987,15 @@ void MainWindow::showAbout() {
 void MainWindow::closeEvent(QCloseEvent* event) {
     if (m_daemonCheckTimer) {
         m_daemonCheckTimer->stop();
+    }
+    
+    // Check config option for stopping daemon on close
+    Config& config = Config::instance();
+    config.load();
+    bool stopDaemonOnClose = config.getConfig().value("stop_daemon_on_close").toBool();
+    
+    if (stopDaemonOnClose && ProcessUtils::isDaemonRunning()) {
+        stopDaemon();
     }
     
     // Clean up PID file

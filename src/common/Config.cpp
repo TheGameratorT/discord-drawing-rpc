@@ -13,6 +13,7 @@ Config::Config() {
     m_config["imgur_client_id"] = "";
     m_config["enable_tray_icon"] = true;
     m_config["stop_daemon_on_close"] = false;
+    m_config["auto_start_presence"] = true;
 }
 
 Config& Config::instance() {

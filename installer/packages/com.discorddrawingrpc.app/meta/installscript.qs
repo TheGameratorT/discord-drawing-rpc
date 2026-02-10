@@ -11,29 +11,29 @@ Component.prototype.createOperations = function()
     if (systemInfo.productType === "windows") {
         // Create Start Menu shortcut for the main GUI application only
         component.addOperation("CreateShortcut", 
-            "@TargetDir@/DiscordDrawRPC.exe", 
+            "@TargetDir@/DiscordDrawingRPC.exe", 
             "@StartMenuDir@/Discord Drawing RPC.lnk",
             "workingDirectory=@TargetDir@",
-            "iconPath=@TargetDir@/DiscordDrawRPC.exe",
+            "iconPath=@TargetDir@/DiscordDrawingRPC.exe",
             "iconId=0",
             "description=Launch Discord Drawing RPC");
 
         // Create Desktop shortcut (optional, user can choose)
         component.addOperation("CreateShortcut", 
-            "@TargetDir@/DiscordDrawRPC.exe", 
+            "@TargetDir@/DiscordDrawingRPC.exe", 
             "@DesktopDir@/Discord Drawing RPC.lnk",
             "workingDirectory=@TargetDir@",
-            "iconPath=@TargetDir@/DiscordDrawRPC.exe",
+            "iconPath=@TargetDir@/DiscordDrawingRPC.exe",
             "iconId=0",
             "description=Launch Discord Drawing RPC");
 
         // Register the main application for uninstall
         component.addOperation("RegisterFileType",
-            "discorddrawrpc",
-            "@TargetDir@/DiscordDrawRPC.exe",
+            "discorddrawingrpc",
+            "@TargetDir@/DiscordDrawingRPC.exe",
             "Discord Drawing RPC Application",
             "text/plain",
-            "@TargetDir@/DiscordDrawRPC.exe,0");
+            "@TargetDir@/DiscordDrawingRPC.exe,0");
     }
 }
 

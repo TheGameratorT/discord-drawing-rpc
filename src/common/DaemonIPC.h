@@ -21,6 +21,13 @@ public:
     static bool sendQuitCommand();
     
     /**
+     * @brief Set the command field to "update" while preserving all other state data
+     * This is useful before starting the daemon to ensure it doesn't quit immediately
+     * @return true if command was written successfully, false otherwise
+     */
+    static bool setUpdateCommand();
+    
+    /**
      * @brief Send an update command to the daemon with new Discord status
      * @param largeImage URL of the image to display
      * @param largeText Tooltip text for the large image
@@ -56,6 +63,13 @@ private:
      * @return true if write was successful, false otherwise
      */
     static bool writeStateFile(const QJsonObject& data);
+    
+    /**
+     * @brief Helper to change only the command field while preserving other data
+     * @param command The command string to set
+     * @return true if command was written successfully, false otherwise
+     */
+    static bool setCommand(const QString& command);
 };
 
 } // namespace DiscordDrawRPC

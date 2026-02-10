@@ -6,8 +6,8 @@
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
-    app.setApplicationName("DiscordDrawRPC");
-    app.setOrganizationName("DiscordDrawRPC");
+    app.setApplicationName("DiscordDrawingRPC");
+    app.setOrganizationName("TheGameratorT");
     app.setWindowIcon(QIcon(":/icons/icon.png"));
     app.setQuitOnLastWindowClosed(false);  // Keep running when window closes
     
@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
         QMessageBox::warning(
             nullptr,
             "Already Running",
-            "DiscordDrawRPC Tray is already running.",
+            "Discord Drawing RPC Tray is already running.",
             QMessageBox::Ok
         );
         return 0;

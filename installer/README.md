@@ -17,7 +17,7 @@ cmake --build build
 ```
 
 This will:
-- Compile all executables (DiscordDrawRPC.exe, DiscordDrawRPCDaemon.exe, DiscordDrawRPCTray.exe)
+- Compile all executables (DiscordDrawingRPC.exe, DiscordDrawingRPCDaemon.exe, DiscordDrawingRPCTray.exe)
 - Copy them to `build/dist/`
 - Deploy Qt DLLs and MinGW dependencies to `build/dist/`
 
@@ -28,18 +28,18 @@ cmake --build build --target installer
 
 This will:
 - Package all contents from `build/dist/` into the installer
-- Create `build/DiscordDrawRPC-Setup.exe`
+- Create `build/DiscordDrawingRPC-Setup.exe`
 
 ## Installer Features
 
 ### What gets installed:
-- **DiscordDrawRPC.exe** - Main GUI application (with Start Menu & Desktop shortcuts)
-- **DiscordDrawRPCDaemon.exe** - Background daemon (internal, no shortcut)
-- **DiscordDrawRPCTray.exe** - System tray application (internal, no shortcut)
+- **DiscordDrawingRPC.exe** - Main GUI application (with Start Menu & Desktop shortcuts)
+- **DiscordDrawingRPCDaemon.exe** - Background daemon (internal, no shortcut)
+- **DiscordDrawingRPCTray.exe** - System tray application (internal, no shortcut)
 - All required Qt DLLs and dependencies
 
 ### Installation locations:
-- Default: `C:/Program Files/DiscordDrawRPC/`
+- Default: `C:/Program Files/DiscordDrawingRPC/`
 - Start Menu: `Discord Draw RPC` folder with shortcut to main app
 - Desktop: `Discord Draw RPC.lnk` shortcut (optional)
 
@@ -55,12 +55,12 @@ Edit `installer/config/config.xml`:
 - Adjust wizard size and style
 
 ### Modify package content:
-Edit `installer/packages/com.discorddrawrpc.app/meta/package.xml`:
+Edit `installer/packages/com.DiscordDrawingRPC.app/meta/package.xml`:
 - Update version, release date, description
 - Change license
 
 ### Modify shortcuts and operations:
-Edit `installer/packages/com.discorddrawrpc.app/meta/installscript.qs`:
+Edit `installer/packages/com.DiscordDrawingRPC.app/meta/installscript.qs`:
 - Add/remove shortcuts
 - Add registry entries
 - Customize installation operations
@@ -87,7 +87,7 @@ If you prefer to build manually:
 ```bash
 # From project root
 cd installer
-binarycreator --offline-only -c config/config.xml -p packages ../build/DiscordDrawRPC-Setup.exe
+binarycreator --offline-only -c config/config.xml -p packages ../build/DiscordDrawingRPC-Setup.exe
 ```
 
-Make sure `build/dist/` contents are copied to `packages/com.discorddrawrpc.app/data/` first.
+Make sure `build/dist/` contents are copied to `packages/com.DiscordDrawingRPC.app/data/` first.

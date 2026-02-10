@@ -160,6 +160,14 @@ void TrayIcon::showWindow() {
 }
 
 void TrayIcon::startDaemon() {
+    if (ProcessUtils::isDaemonRunning()) {
+        return;
+    }
+
+    // Ensure the state file has command="update" before starting daemon
+    // This prevents the daemon from immediately quitting if command was "quit"
+    DaemonIPC::setUpdateCommand();
+
     QString daemonPath = getExecutablePath(ExecutableType::Daemon);
     
     QProcess* process = new QProcess(this);

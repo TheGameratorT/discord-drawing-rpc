@@ -78,6 +78,14 @@ void DiscordRPCDaemon::start() {
             this, &DiscordRPCDaemon::onStateFileChanged);
     
     qInfo() << "File watcher started";
+    
+    // Read and apply initial state
+    QJsonObject initialState = readStateFile();
+    if (!initialState.isEmpty()) {
+        m_lastState = initialState;
+        handleCommand(initialState);
+        qInfo() << "Applied initial state from file";
+    }
 }
 
 void DiscordRPCDaemon::stop() {

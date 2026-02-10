@@ -6,6 +6,7 @@
 #include <QMutex>
 #include "DiscordRPCDaemon.h"
 #include "../common/Config.h"
+#include "../common/PlatformUtils.h"
 
 // Global file for logging
 static QFile* g_logFile = nullptr;
@@ -55,8 +56,14 @@ void messageHandler(QtMsgType type, const QMessageLogContext& context, const QSt
 
 int main(int argc, char *argv[]) {
     QCoreApplication app(argc, argv);
-    app.setApplicationName("DiscordDrawRPC");
-    app.setOrganizationName("DiscordDrawRPC");
+    app.setApplicationName("DiscordDrawingRPC");
+    app.setOrganizationName("TheGameratorT");
+    
+    // Check if another instance is already running
+    if (DiscordDrawRPC::ProcessUtils::isDaemonRunning()) {
+        qCritical() << "Discord Drawing RPC Daemon is already running.";
+        return 1;
+    }
     
     // Setup logging to file
     DiscordDrawRPC::Config& config = DiscordDrawRPC::Config::instance();

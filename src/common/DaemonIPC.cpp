@@ -8,11 +8,19 @@
 namespace DiscordDrawRPC {
 
 bool DaemonIPC::sendQuitCommand() {
+    return setCommand("quit");
+}
+
+bool DaemonIPC::setUpdateCommand() {
+    return setCommand("update");
+}
+
+bool DaemonIPC::setCommand(const QString& command) {
     // Read existing state to preserve fields
     QJsonObject stateData = readStateFile();
     
-    // Set quit command
-    stateData["command"] = "quit";
+    // Set command
+    stateData["command"] = command;
     
     return writeStateFile(stateData);
 }

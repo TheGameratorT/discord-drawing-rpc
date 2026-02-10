@@ -187,7 +187,7 @@ endif()
 add_custom_target(clean-all
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/dist"
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/packages"
-    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_SOURCE_DIR}/installer/packages/com.discorddrawrpc.app/data"
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_SOURCE_DIR}/installer/packages/com.discorddrawingrpc.app/data"
     COMMAND ${CMAKE_COMMAND} -E remove "${CMAKE_BINARY_DIR}/DiscordDrawingRPC-Setup.exe"
     COMMENT "Cleaning all build artifacts, dist folder, packages, and installer data..."
 )

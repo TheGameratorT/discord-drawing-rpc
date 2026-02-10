@@ -42,9 +42,6 @@ installer/packages/*/data/
 *.out
 *.app
 !installer/**/*.app
-DiscordDrawRPCDaemon
-DiscordDrawRPC
-DiscordDrawRPCTray
 
 # CMake
 CMakeCache.txt

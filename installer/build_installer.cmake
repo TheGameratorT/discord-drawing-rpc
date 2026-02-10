@@ -31,7 +31,7 @@ message(STATUS "Found binarycreator: ${BINARYCREATOR_EXECUTABLE}")
 # Set paths
 set(INSTALLER_DIR "${INSTALLER_SOURCE_DIR}")
 set(DIST_DIR "${CMAKE_BINARY_DIR}/dist")
-set(DATA_DIR "${INSTALLER_DIR}/packages/com.discorddrawrpc.app/data")
+set(DATA_DIR "${INSTALLER_DIR}/packages/com.discorddrawingrpc.app/data")
 set(OUTPUT_DIR "${CMAKE_BINARY_DIR}")
 
 # Clean and prepare data directory

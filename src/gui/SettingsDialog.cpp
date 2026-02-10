@@ -34,9 +34,14 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     formLayout->addRow("Tray Icon:", m_enableTrayCheckbox);
     
     // Stop Daemon on Close
-    m_stopDaemonOnCloseCheckbox = new QCheckBox("Stop daemon when closing GUI", this);
-    m_stopDaemonOnCloseCheckbox->setToolTip("Automatically stop the Discord presence daemon when closing the GUI window");
-    formLayout->addRow("Stop Daemon:", m_stopDaemonOnCloseCheckbox);
+    m_stopDaemonOnCloseCheckbox = new QCheckBox("Stop presence when closing GUI", this);
+    m_stopDaemonOnCloseCheckbox->setToolTip("Automatically stop the Discord presence when closing the GUI window");
+    formLayout->addRow("Stop Presence:", m_stopDaemonOnCloseCheckbox);
+    
+    // Auto Start Presence
+    m_autoStartPresenceCheckbox = new QCheckBox("Auto-start presence on GUI launch", this);
+    m_autoStartPresenceCheckbox->setToolTip("Automatically start the Discord presence when opening the GUI if a client ID is configured");
+    formLayout->addRow("Auto-Start:", m_autoStartPresenceCheckbox);
     
     layout->addLayout(formLayout);
     
@@ -73,6 +78,7 @@ void SettingsDialog::loadCurrentSettings() {
     m_imgurIdInput->setText(config.getValue("imgur_client_id"));
     m_enableTrayCheckbox->setChecked(config.getConfig().value("enable_tray_icon").toBool());
     m_stopDaemonOnCloseCheckbox->setChecked(config.getConfig().value("stop_daemon_on_close").toBool());
+    m_autoStartPresenceCheckbox->setChecked(config.getConfig().value("auto_start_presence").toBool());
 }
 
 QJsonObject SettingsDialog::getSettings() const {
@@ -81,6 +87,7 @@ QJsonObject SettingsDialog::getSettings() const {
     settings["imgur_client_id"] = m_imgurIdInput->text().trimmed();
     settings["enable_tray_icon"] = m_enableTrayCheckbox->isChecked();
     settings["stop_daemon_on_close"] = m_stopDaemonOnCloseCheckbox->isChecked();
+    settings["auto_start_presence"] = m_autoStartPresenceCheckbox->isChecked();
     return settings;
 }
 

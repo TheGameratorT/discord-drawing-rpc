@@ -67,6 +67,17 @@ MainWindow::MainWindow(QWidget* parent)
     
     // Initialize tray icon
     initTrayIcon();
+    
+    // Auto-start presence if enabled
+    Config& config = Config::instance();
+    config.load();
+    bool autoStartPresence = config.getConfig().value("auto_start_presence").toBool();
+    QString clientId = config.getValue("discord_client_id");
+    
+    // Don't auto-start if tray is running (means GUI was already running)
+    if (autoStartPresence && !clientId.isEmpty() && !ProcessUtils::isDaemonRunning() && !ProcessUtils::isTrayRunning()) {
+        QTimer::singleShot(500, this, &MainWindow::startDaemon);
+    }
 }
 
 MainWindow::~MainWindow() {
@@ -126,8 +137,8 @@ void MainWindow::launchTrayProcess() {
 void MainWindow::loadCurrentState() {
     QJsonObject stateData = DaemonIPC::readCurrentState();
     
-    // Only load if it's an update command
-    if (stateData.value("command").toString() != "update") {
+    // Don't load if state is empty
+    if (stateData.isEmpty()) {
         return;
     }
     
@@ -811,6 +822,20 @@ void MainWindow::startDaemon() {
         return;
     }
     
+    // Check if client ID is set
+    Config& config = Config::instance();
+    config.load();
+    QString clientId = config.getValue("discord_client_id");
+    
+    if (clientId.isEmpty()) {
+        QMessageBox::warning(
+            this,
+            "No Client ID",
+            "Discord Client ID is not configured!\n\nPlease go to Settings and set your Discord Client ID first."
+        );
+        return;
+    }
+    
     QString daemonPath = getExecutablePath(ExecutableType::Daemon);
     
     if (!QFile::exists(daemonPath)) {
@@ -821,6 +846,10 @@ void MainWindow::startDaemon() {
         );
         return;
     }
+    
+    // Ensure the state file has command="update" before starting daemon
+    // This prevents the daemon from immediately quitting if command was "quit"
+    DaemonIPC::setUpdateCommand();
     
     QProcess* process = new QProcess(this);
     
@@ -946,16 +975,27 @@ void MainWindow::showSettings() {
         
         // Save settings
         Config& config = Config::instance();
+        
+        // Check if Discord Client ID changed
+        QString oldClientId = config.getValue("discord_client_id");
+        QString newClientId = settings.value("discord_client_id").toString();
+        bool clientIdChanged = (oldClientId != newClientId);
+        
         config.setConfig(settings);
         
         if (config.save()) {
             // Re-initialize tray icon based on new setting
             initTrayIcon();
             
+            QString message = "Settings saved successfully!";
+            if (clientIdChanged) {
+                message += "\n\nPlease restart the presence for changes to take effect.";
+            }
+            
             QMessageBox::information(
                 this,
                 "Settings Saved",
-                "Settings saved successfully!\n\nPlease restart the daemon for changes to take effect."
+                message
             );
         } else {
             QMessageBox::critical(

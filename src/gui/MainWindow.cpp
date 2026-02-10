@@ -885,7 +885,10 @@ void MainWindow::updateDiscordStatus() {
         
         if (reply == QMessageBox::Yes) {
             startDaemon();
-            QThread::msleep(1000);
+            // Wait for daemon to start (poll up to 2 seconds)
+            for (int i = 0; i < 20 && !ProcessUtils::isDaemonRunning(); ++i) {
+                QThread::msleep(100);
+            }
         }
     }
     
@@ -911,7 +914,6 @@ void MainWindow::quitApplication() {
     // Stop daemon if running
     if (ProcessUtils::isDaemonRunning()) {
         stopDaemon();
-        QThread::msleep(500);
     }
     
     // Stop tray if running

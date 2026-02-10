@@ -235,8 +235,6 @@ void TrayIcon::exitApp() {
     // Gracefully stop daemon if running
     if (ProcessUtils::isDaemonRunning()) {
         DaemonIPC::sendQuitCommand();
-        // Give daemon time to shut down gracefully
-        QThread::msleep(500);
     }
     
     // Terminate GUI process if running

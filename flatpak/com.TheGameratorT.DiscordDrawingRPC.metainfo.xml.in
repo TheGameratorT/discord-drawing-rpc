@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.TheGameratorT.DiscordDrawingRPC</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Discord Drawing RPC</name>
+  <summary>Share your drawing activity on Discord</summary>
+  <icon type="stock">com.TheGameratorT.DiscordDrawingRPC</icon>
+  <description>
+    <p>
+      A native desktop application that lets you share your drawing progress with Discord friends through Rich Presence.
+    </p>
+    <p>
+      Discord Drawing RPC allows you to update your friends with a preview of your drawings directly in your Discord status. 
+      Whether you're working on digital art, sketches, or any creative work, your friends can see what you're creating in real-time.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Lightweight native application</li>
+      <li>System tray integration - runs quietly in the background</li>
+      <li>Cross-platform support</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">com.TheGameratorT.DiscordDrawingRPC.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Main application window</caption>
+      <image>https://raw.githubusercontent.com/TheGameratorT/discord-drawing-rpc/main/screenshots/mainwindow.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Discord activity display</caption>
+      <image>https://raw.githubusercontent.com/TheGameratorT/discord-drawing-rpc/main/screenshots/activity.png</image>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://github.com/TheGameratorT/discord-drawing-rpc</url>
+  <url type="bugtracker">https://github.com/TheGameratorT/discord-drawing-rpc/issues</url>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="@APP_VERSION_STRING@" date="@BUILD_DATE@">
+      <description>
+        <p>Version @APP_VERSION_STRING@</p>
+      </description>
+    </release>
+  </releases>
+  <developer_name>TheGameratorT</developer_name>
+  <categories>
+    <category>Graphics</category>
+    <category>Utility</category>
+  </categories>
+  <keywords>
+    <keyword>discord</keyword>
+    <keyword>rpc</keyword>
+    <keyword>drawing</keyword>
+    <keyword>status</keyword>
+  </keywords>
+</component>

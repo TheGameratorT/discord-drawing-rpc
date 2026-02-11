@@ -43,6 +43,9 @@ QString DiscordRPC::getDiscordIpcPath(int pipeNum) {
 #else
     // Try different locations where Discord might create its socket
     QStringList possiblePaths = {
+        // Flatpak Discord location
+        QString(qEnvironmentVariable("XDG_RUNTIME_DIR")) + QString("/app/com.discordapp.Discord/discord-ipc-%1").arg(pipeNum),
+        // Standard locations
         QString(qEnvironmentVariable("XDG_RUNTIME_DIR")) + QString("/discord-ipc-%1").arg(pipeNum),
         QString("/run/user/%1/discord-ipc-%2").arg(getuid()).arg(pipeNum),
         QString(qEnvironmentVariable("TMPDIR")) + QString("/discord-ipc-%1").arg(pipeNum),

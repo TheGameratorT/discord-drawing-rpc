@@ -6,7 +6,7 @@ cmake-build-*/
 installer/packages/*/data/
 
 # Generated files from templates (*.in files are the source)
-installer/packages/com.discorddrawingrpc.app/meta/package.xml
+installer/packages/com.TheGameratorT.app/meta/package.xml
 installer/config/config.xml
 
 # IDE files
@@ -55,6 +55,7 @@ Makefile
 *.cmake
 !CMakeLists.txt
 !installer/build_installer.cmake
+!flatpak/generate_manifest.cmake
 
 # MOC/RCC/UIC generated files
 moc_*

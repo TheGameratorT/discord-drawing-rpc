@@ -16,6 +16,20 @@ Discord Draw RPC allows you to update your friends with a preview of your drawin
 - **System tray integration** – Runs quietly in the background
 - **Cross-platform support** – Works on Windows and other platforms
 
+## Installation
+
+### Arch Linux (AUR)
+
+```bash
+yay -S discord-drawing-rpc
+```
+
+### Flatpak
+
+```bash
+flatpak install flathub com.TheGameratorT.DiscordDrawingRPC
+```
+
 ## Screenshots
 
 <div align="center">

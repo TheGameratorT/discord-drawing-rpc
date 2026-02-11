@@ -55,12 +55,12 @@ Edit `installer/config/config.xml`:
 - Adjust wizard size and style
 
 ### Modify package content:
-Edit `installer/packages/com.DiscordDrawingRPC.app/meta/package.xml`:
+Edit `installer/packages/com.TheGameratorT.app/meta/package.xml`:
 - Update version, release date, description
 - Change license
 
 ### Modify shortcuts and operations:
-Edit `installer/packages/com.DiscordDrawingRPC.app/meta/installscript.qs`:
+Edit `installer/packages/com.TheGameratorT.app/meta/installscript.qs`:
 - Add/remove shortcuts
 - Add registry entries
 - Customize installation operations
@@ -90,4 +90,4 @@ cd installer
 binarycreator --offline-only -c config/config.xml -p packages ../build/DiscordDrawingRPC-Setup.exe
 ```
 
-Make sure `build/dist/` contents are copied to `packages/com.DiscordDrawingRPC.app/data/` first.
+Make sure `build/dist/` contents are copied to `packages/com.TheGameratorT.app/data/` first.

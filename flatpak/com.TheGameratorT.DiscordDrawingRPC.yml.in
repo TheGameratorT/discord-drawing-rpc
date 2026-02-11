@@ -1,0 +1,27 @@
+app-id: com.TheGameratorT.DiscordDrawingRPC
+runtime: org.kde.Platform
+runtime-version: '6.10'
+sdk: org.kde.Sdk
+command: discord-drawing-rpc
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --share=network
+  - --device=dri
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.kde.StatusNotifierWatcher
+  # For Discord RPC
+  - --filesystem=xdg-run/discord-ipc-*
+  - --filesystem=xdg-run/app/com.discordapp.Discord
+  - --filesystem=/run/user:ro
+modules:
+  - name: discord-drawing-rpc
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DFLATPAK_BUILD=ON
+      - -DVERSION_TAG=@APP_VERSION_STRING@
+    sources:
+@FLATPAK_SOURCES@

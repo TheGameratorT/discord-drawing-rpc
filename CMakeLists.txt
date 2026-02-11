@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.16)
 # Set version from environment variable or use git commit hash
 if(DEFINED ENV{VERSION_TAG})
     set(APP_VERSION_STRING $ENV{VERSION_TAG})
+elseif(DEFINED VERSION_TAG)
+    set(APP_VERSION_STRING ${VERSION_TAG})
 else()
     # Get short commit hash from git
     execute_process(
@@ -33,6 +35,12 @@ else()
     string(TIMESTAMP BUILD_DATE "%Y-%m-%d")
 endif()
 
+# Flatpak build option
+option(FLATPAK_BUILD "Build for Flatpak" OFF)
+if(FLATPAK_BUILD)
+    set(FLATPAK_ID "com.TheGameratorT.DiscordDrawingRPC")
+endif()
+
 # Configure version header
 configure_file(
     "${CMAKE_SOURCE_DIR}/src/common/Version.h.in"
@@ -41,11 +49,32 @@ configure_file(
 )
 include_directories(${CMAKE_BINARY_DIR}/generated)
 
+# Configure desktop file with appropriate icon name
+if(FLATPAK_BUILD)
+    set(DESKTOP_ICON_NAME "${FLATPAK_ID}")
+else()
+    set(DESKTOP_ICON_NAME "discord-drawing-rpc")
+endif()
+configure_file(
+    "${CMAKE_SOURCE_DIR}/resources/discord-drawing-rpc.desktop.in"
+    "${CMAKE_BINARY_DIR}/generated/discord-drawing-rpc.desktop"
+    @ONLY
+)
+
+# Configure Flatpak metainfo file
+if(FLATPAK_BUILD)
+    configure_file(
+        "${CMAKE_SOURCE_DIR}/flatpak/com.TheGameratorT.DiscordDrawingRPC.metainfo.xml.in"
+        "${CMAKE_BINARY_DIR}/flatpak/com.TheGameratorT.DiscordDrawingRPC.metainfo.xml"
+        @ONLY
+    )
+endif()
+
 # Configure installer package.xml (Windows only)
 if(WIN32)
     configure_file(
-        "${CMAKE_SOURCE_DIR}/installer/packages/com.discorddrawingrpc.app/meta/package.xml.in"
-        "${CMAKE_BINARY_DIR}/installer/packages/com.discorddrawingrpc.app/meta/package.xml"
+        "${CMAKE_SOURCE_DIR}/installer/packages/com.TheGameratorT.app/meta/package.xml.in"
+        "${CMAKE_BINARY_DIR}/installer/packages/com.TheGameratorT.app/meta/package.xml"
         @ONLY
     )
     configure_file(
@@ -146,15 +175,33 @@ install(TARGETS discord_common
 
 # Install Linux desktop files and icons
 if(UNIX AND NOT APPLE)
-    install(FILES resources/discord-drawing-rpc.desktop
-        DESTINATION share/applications
-    )
-    # Install icon (512x512 original)
-    if(EXISTS "${CMAKE_SOURCE_DIR}/icon.png")
-        install(FILES icon.png
-            DESTINATION share/icons/hicolor/512x512/apps
-            RENAME discord-drawing-rpc.png
+    if(FLATPAK_BUILD)
+        # Flatpak: Use Flatpak ID for file names
+        install(FILES ${CMAKE_BINARY_DIR}/generated/discord-drawing-rpc.desktop
+            DESTINATION share/applications
+            RENAME ${FLATPAK_ID}.desktop
         )
+        if(EXISTS "${CMAKE_SOURCE_DIR}/icon.png")
+            install(FILES icon.png
+                DESTINATION share/icons/hicolor/512x512/apps
+                RENAME ${FLATPAK_ID}.png
+            )
+        endif()
+        # Install metainfo file
+        install(FILES ${CMAKE_BINARY_DIR}/flatpak/${FLATPAK_ID}.metainfo.xml
+            DESTINATION share/metainfo
+        )
+    else()
+        # Regular Linux installation
+        install(FILES ${CMAKE_BINARY_DIR}/generated/discord-drawing-rpc.desktop
+            DESTINATION share/applications
+        )
+        if(EXISTS "${CMAKE_SOURCE_DIR}/icon.png")
+            install(FILES icon.png
+                DESTINATION share/icons/hicolor/512x512/apps
+                RENAME discord-drawing-rpc.png
+            )
+        endif()
     endif()
 endif()
 
@@ -163,53 +210,62 @@ endif()
 set(DIST_DIR "${CMAKE_BINARY_DIR}/dist")
 
 # Create custom target to deploy executables with dependencies
-add_custom_target(deploy ALL
-    DEPENDS discord-drawing-rpc-daemon discord-drawing-rpc discord-drawing-rpc-tray
-    COMMENT "Deploying executables and DLLs to dist folder..."
-)
-
-# Copy executables to dist
-add_custom_command(TARGET deploy POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${DIST_DIR}
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:discord_common> ${DIST_DIR}/
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:discord-drawing-rpc-daemon> ${DIST_DIR}/
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:discord-drawing-rpc> ${DIST_DIR}/
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:discord-drawing-rpc-tray> ${DIST_DIR}/
-    COMMENT "Copying executables to dist..."
-)
-
-# Deploy Qt dependencies
-if(WIN32)
-    # Find windeployqt
-    get_target_property(QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
-    get_filename_component(QT_BIN_DIR "${QMAKE_EXECUTABLE}" DIRECTORY)
-    find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${QT_BIN_DIR}")
+# For Flatpak builds, the install targets are used instead of the dist folder
+if(FLATPAK_BUILD)
+    add_custom_target(deploy
+        DEPENDS discord-drawing-rpc-daemon discord-drawing-rpc discord-drawing-rpc-tray
+        COMMENT "Skipping dist deployment for Flatpak build..."
+    )
+else()
+    add_custom_target(deploy ALL
+        DEPENDS discord-drawing-rpc-daemon discord-drawing-rpc discord-drawing-rpc-tray
+        COMMENT "Deploying executables and DLLs to dist folder..."
+    )
     
-    if(WINDEPLOYQT_EXECUTABLE)
-        # Deploy Qt DLLs for each executable
-        add_custom_command(TARGET deploy POST_BUILD
-            COMMAND ${WINDEPLOYQT_EXECUTABLE} --no-translations --no-system-d3d-compiler --no-opengl-sw 
-                    "${DIST_DIR}/DiscordDrawingRPC.exe"
-            COMMAND ${WINDEPLOYQT_EXECUTABLE} --no-translations --no-system-d3d-compiler --no-opengl-sw 
-                    "${DIST_DIR}/DiscordDrawingRPCTray.exe"
-            COMMAND ${WINDEPLOYQT_EXECUTABLE} --no-translations --no-system-d3d-compiler --no-opengl-sw 
-                    "${DIST_DIR}/DiscordDrawingRPCDaemon.exe"
-            COMMENT "Deploying Qt dependencies..."
-        )
-    else()
-        message(WARNING "windeployqt not found. Qt DLLs will need to be copied manually.")
-    endif()
-    
-    # Automatically copy all MinGW DLLs using ldd (only for MinGW builds)
-    if(MINGW OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        add_custom_command(TARGET deploy POST_BUILD
-            COMMAND bash -c "ldd ${DIST_DIR}/DiscordDrawingRPC.exe | grep /mingw64 | awk '{print $$3}' | xargs -I {} cp -u {} ${DIST_DIR}/ || true"
-            COMMAND bash -c "ldd ${DIST_DIR}/DiscordDrawingRPCTray.exe | grep /mingw64 | awk '{print $$3}' | xargs -I {} cp -u {} ${DIST_DIR}/ || true"
-            COMMAND bash -c "ldd ${DIST_DIR}/DiscordDrawingRPCDaemon.exe | grep /mingw64 | awk '{print $$3}' | xargs -I {} cp -u {} ${DIST_DIR}/ || true"
-            COMMENT "Automatically copying all MinGW DLLs..."
-        )
+    # Copy executables to dist
+    add_custom_command(TARGET deploy POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${DIST_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:discord_common> ${DIST_DIR}/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:discord-drawing-rpc-daemon> ${DIST_DIR}/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:discord-drawing-rpc> ${DIST_DIR}/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:discord-drawing-rpc-tray> ${DIST_DIR}/
+        COMMENT "Copying executables to dist..."
+    )
+
+    # Deploy Qt dependencies
+    if(WIN32)
+        # Find windeployqt
+        get_target_property(QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
+        get_filename_component(QT_BIN_DIR "${QMAKE_EXECUTABLE}" DIRECTORY)
+        find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${QT_BIN_DIR}")
+        
+        if(WINDEPLOYQT_EXECUTABLE)
+            # Deploy Qt DLLs for each executable
+            add_custom_command(TARGET deploy POST_BUILD
+                COMMAND ${WINDEPLOYQT_EXECUTABLE} --no-translations --no-system-d3d-compiler --no-opengl-sw 
+                        "${DIST_DIR}/DiscordDrawingRPC.exe"
+                COMMAND ${WINDEPLOYQT_EXECUTABLE} --no-translations --no-system-d3d-compiler --no-opengl-sw 
+                        "${DIST_DIR}/DiscordDrawingRPCTray.exe"
+                COMMAND ${WINDEPLOYQT_EXECUTABLE} --no-translations --no-system-d3d-compiler --no-opengl-sw 
+                        "${DIST_DIR}/DiscordDrawingRPCDaemon.exe"
+                COMMENT "Deploying Qt dependencies..."
+            )
+        else()
+            message(WARNING "windeployqt not found. Qt DLLs will need to be copied manually.")
+        endif()
+        
+        # Automatically copy all MinGW DLLs using ldd (only for MinGW builds)
+        if(MINGW OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+            add_custom_command(TARGET deploy POST_BUILD
+                COMMAND bash -c "ldd ${DIST_DIR}/DiscordDrawingRPC.exe | grep /mingw64 | awk '{print $$3}' | xargs -I {} cp -u {} ${DIST_DIR}/ || true"
+                COMMAND bash -c "ldd ${DIST_DIR}/DiscordDrawingRPCTray.exe | grep /mingw64 | awk '{print $$3}' | xargs -I {} cp -u {} ${DIST_DIR}/ || true"
+                COMMAND bash -c "ldd ${DIST_DIR}/DiscordDrawingRPCDaemon.exe | grep /mingw64 | awk '{print $$3}' | xargs -I {} cp -u {} ${DIST_DIR}/ || true"
+                COMMENT "Automatically copying all MinGW DLLs..."
+            )
+        endif()
     endif()
 endif()
+
 
 # Installer target (Windows only)
 if(WIN32)
@@ -230,7 +286,7 @@ endif()
 add_custom_target(clean-all
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/dist"
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/packages"
-    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_SOURCE_DIR}/installer/packages/com.discorddrawingrpc.app/data"
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_SOURCE_DIR}/installer/packages/com.TheGameratorT.app/data"
     COMMAND ${CMAKE_COMMAND} -E remove "${CMAKE_BINARY_DIR}/DiscordDrawingRPC-Setup.exe"
     COMMENT "Cleaning all build artifacts, dist folder, packages, and installer data..."
 )

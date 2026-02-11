@@ -134,3 +134,51 @@ jobs:
       with:
         files: build/DiscordDrawingRPC-Setup.exe
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  flatpak:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.10
+      options: --privileged
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set build version
+      run: |
+        if [ "${{ github.event_name }}" = "release" ]; then
+          VERSION_STRING="${GITHUB_REF##*/v}"
+          echo "VERSION_TAG=${VERSION_STRING}" >> $GITHUB_ENV
+        else
+          # For non-release builds, use git commit hash
+          VERSION_STRING="$(git rev-parse --short HEAD)"
+          echo "VERSION_TAG=${VERSION_STRING}" >> $GITHUB_ENV
+        fi
+        echo "MANIFEST_TYPE=CI" >> $GITHUB_ENV
+        echo "BUILD_DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+    - name: Generate Flatpak manifest
+      run: |
+        cmake -DMANIFEST_TYPE=${{ env.MANIFEST_TYPE }} \
+              -DAPP_VERSION_STRING=${{ env.VERSION_TAG }} \
+              -DSOURCE_DIR=$PWD \
+              -DOUTPUT_DIR=$PWD/build/flatpak \
+              -P flatpak/generate_manifest.cmake
+    - name: Build Flatpak
+      uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+      with:
+        bundle: discord-drawing-rpc-x86_64.flatpak
+        manifest-path: build/flatpak/com.TheGameratorT.DiscordDrawingRPC.yml
+        cache-key: flatpak-builder-${{ github.sha }}
+        upload-artifact: false
+      env:
+        VERSION_TAG: ${{ env.VERSION_TAG }}
+        BUILD_DATE: ${{ env.BUILD_DATE }}
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        path: discord-drawing-rpc-x86_64.flatpak
+        name: flatpak_x86_64
+    - name: Upload to release
+      uses: AButler/upload-release-assets@v2.0
+      if: ${{ success() && startsWith(github.ref, 'refs/tags') }}
+      with:
+        files: discord-drawing-rpc-x86_64.flatpak
+        repo-token: ${{ secrets.GITHUB_TOKEN }}

@@ -2,7 +2,7 @@
 Name=Discord Drawing RPC
 Comment=Share your drawing activity on Discord
 Exec=discord-drawing-rpc
-Icon=discord-drawing-rpc
+Icon=@DESKTOP_ICON_NAME@
 Terminal=false
 Type=Application
 Categories=Graphics;Utility;

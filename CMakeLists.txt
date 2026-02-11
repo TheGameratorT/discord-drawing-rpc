@@ -197,7 +197,7 @@ if(UNIX AND NOT APPLE)
             DESTINATION share/applications
         )
         if(EXISTS "${CMAKE_SOURCE_DIR}/icon.png")
-            install(FILES icon.png
+            install(FILES ${CMAKE_SOURCE_DIR}/icon.png
                 DESTINATION share/icons/hicolor/512x512/apps
                 RENAME discord-drawing-rpc.png
             )

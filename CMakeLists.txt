@@ -1,8 +1,59 @@
 cmake_minimum_required(VERSION 3.16)
-project(discord-drawing-rpc VERSION 1.0.0 LANGUAGES CXX)
+
+# Set version from environment variable or use git commit hash
+if(DEFINED ENV{VERSION_TAG})
+    set(APP_VERSION_STRING $ENV{VERSION_TAG})
+else()
+    # Get short commit hash from git
+    execute_process(
+        COMMAND git rev-parse --short HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_COMMIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    if(GIT_COMMIT_HASH)
+        set(APP_VERSION_STRING "${GIT_COMMIT_HASH}")
+    else()
+        set(APP_VERSION_STRING "unknown")
+    endif()
+endif()
+
+project(discord-drawing-rpc LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+message(STATUS "Building version: ${APP_VERSION_STRING}")
+
+# Set build date
+if(DEFINED ENV{BUILD_DATE})
+    set(BUILD_DATE $ENV{BUILD_DATE})
+else()
+    string(TIMESTAMP BUILD_DATE "%Y-%m-%d")
+endif()
+
+# Configure version header
+configure_file(
+    "${CMAKE_SOURCE_DIR}/src/common/Version.h.in"
+    "${CMAKE_BINARY_DIR}/generated/Version.h"
+    @ONLY
+)
+include_directories(${CMAKE_BINARY_DIR}/generated)
+
+# Configure installer package.xml (Windows only)
+if(WIN32)
+    configure_file(
+        "${CMAKE_SOURCE_DIR}/installer/packages/com.discorddrawingrpc.app/meta/package.xml.in"
+        "${CMAKE_BINARY_DIR}/installer/packages/com.discorddrawingrpc.app/meta/package.xml"
+        @ONLY
+    )
+    configure_file(
+        "${CMAKE_SOURCE_DIR}/installer/config/config.xml.in"
+        "${CMAKE_BINARY_DIR}/installer/config/config.xml"
+        @ONLY
+    )
+endif()
 
 # Find Qt6 packages
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network)

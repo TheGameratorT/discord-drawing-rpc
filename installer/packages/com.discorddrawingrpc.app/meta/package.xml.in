@@ -2,8 +2,8 @@
 <Package>
     <DisplayName>Discord Drawing RPC</DisplayName>
     <Description>Display your drawing activity on Discord</Description>
-    <Version>1.0.0</Version>
-    <ReleaseDate>2026-02-08</ReleaseDate>
+    <Version>@APP_VERSION_STRING@</Version>
+    <ReleaseDate>@BUILD_DATE@</ReleaseDate>
     <Licenses>
         <License name="GNU General Public License v3" file="license.txt" />
     </Licenses>

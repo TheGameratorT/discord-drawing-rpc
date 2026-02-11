@@ -7,6 +7,7 @@
 #include "../common/Common.h"
 #include "../common/PlatformUtils.h"
 #include "../common/DaemonIPC.h"
+#include "Version.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -1014,14 +1015,15 @@ void MainWindow::viewLogs() {
 }
 
 void MainWindow::showAbout() {
-    QString bodyText = "<p><strong>Discord Drawing RPC</strong></p>"
+    QString bodyText = QString("<p><strong>Discord Drawing RPC</strong></p>"
+        "<p>Version: %1</p>"
         "<p>Copyright &copy; 2026 TheGameratorT</p>"
         "<p><span style=\"text-decoration: underline;\">License:</span></p>"
         "<p style=\"padding-left: 30px;\">This application is licensed under the GNU General Public License v3.</p>"
         "<p style=\"padding-left: 30px;\">This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>"
         "<p style=\"padding-left: 30px;\">This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.<br />See the GNU General Public License for more details.</p>"
         "<p style=\"padding-left: 30px;\">For details read the LICENSE file bundled with the program or visit:</p>"
-        "<p style=\"padding-left: 30px;\"><a href=\"https://www.gnu.org/licenses/\">https://www.gnu.org/licenses/</a></p>";
+        "<p style=\"padding-left: 30px;\"><a href=\"https://www.gnu.org/licenses/\">https://www.gnu.org/licenses/</a></p>").arg(APP_VERSION_STRING);
     
     QMessageBox::about(this, "About Discord Drawing RPC", bodyText);
 }

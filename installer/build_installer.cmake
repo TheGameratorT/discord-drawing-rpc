@@ -32,6 +32,8 @@ message(STATUS "Found binarycreator: ${BINARYCREATOR_EXECUTABLE}")
 set(INSTALLER_DIR "${INSTALLER_SOURCE_DIR}")
 set(DIST_DIR "${CMAKE_BINARY_DIR}/dist")
 set(DATA_DIR "${INSTALLER_DIR}/packages/com.discorddrawingrpc.app/data")
+set(META_DIR_BUILD "${CMAKE_BINARY_DIR}/installer/packages/com.discorddrawingrpc.app/meta")
+set(CONFIG_DIR_BUILD "${CMAKE_BINARY_DIR}/installer/config")
 set(OUTPUT_DIR "${CMAKE_BINARY_DIR}")
 
 # Clean and prepare data directory
@@ -48,6 +50,24 @@ foreach(DIST_FILE ${DIST_FILES})
     file(MAKE_DIRECTORY "${DATA_DIR}/${REL_DIR}")
     file(COPY "${DIST_FILE}" DESTINATION "${DATA_DIR}/${REL_DIR}")
 endforeach()
+
+# Copy configured package.xml from build directory
+message(STATUS "Copying configured package.xml...")
+if(EXISTS "${META_DIR_BUILD}/package.xml")
+    file(COPY "${META_DIR_BUILD}/package.xml" 
+         DESTINATION "${INSTALLER_DIR}/packages/com.discorddrawingrpc.app/meta/")
+else()
+    message(WARNING "Configured package.xml not found at ${META_DIR_BUILD}/package.xml")
+endif()
+
+# Copy configured config.xml from build directory
+message(STATUS "Copying configured config.xml...")
+if(EXISTS "${CONFIG_DIR_BUILD}/config.xml")
+    file(COPY "${CONFIG_DIR_BUILD}/config.xml" 
+         DESTINATION "${INSTALLER_DIR}/config/")
+else()
+    message(WARNING "Configured config.xml not found at ${CONFIG_DIR_BUILD}/config.xml")
+endif()
 
 # Create the installer
 message(STATUS "Creating installer...")

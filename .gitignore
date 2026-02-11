@@ -5,6 +5,10 @@ cmake-build-*/
 # Installer runtime-generated data
 installer/packages/*/data/
 
+# Generated files from templates (*.in files are the source)
+installer/packages/com.discorddrawingrpc.app/meta/package.xml
+installer/config/config.xml
+
 # IDE files
 .vscode/
 .idea/

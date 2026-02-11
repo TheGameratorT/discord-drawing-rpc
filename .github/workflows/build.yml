@@ -27,10 +27,9 @@ jobs:
     - name: Set build version
       run: |
         if [ "${{ github.event_name }}" = "release" ]; then
-          echo "BUILD_VERSION=${GITHUB_REF##*/}" >> $GITHUB_ENV
-        else
-          echo "BUILD_VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "VERSION_TAG=${GITHUB_REF##*/v}" >> $GITHUB_ENV
         fi
+        echo "BUILD_DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
     - name: Build
       run: |
         mkdir build
@@ -61,6 +60,12 @@ jobs:
       uses: jurplel/install-qt-action@v3
       with:
         version: '6.5.*'
+    - name: Set build version
+      run: |
+        if [ "${{ github.event_name }}" = "release" ]; then
+          echo "VERSION_TAG=${GITHUB_REF##*/v}" >> $GITHUB_ENV
+        fi
+        echo "BUILD_DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
     - name: Build
       run: |
         mkdir build
@@ -101,7 +106,13 @@ jobs:
         msystem: ${{ matrix.mingw-arch }}
         update: true
     - name: Install build tools and Qt6
-      run: pacman -S --noconfirm mingw-w64-${{ matrix.msys2-arch }}-{gcc,cmake,ninja,qt6-base,qt6-tools,qt-installer-framework}
+      run: pacman -S --noconfirm git mingw-w64-${{ matrix.msys2-arch }}-{gcc,cmake,ninja,qt6-base,qt6-tools,qt-installer-framework}
+    - name: Set build version
+      run: |
+        if [ "${{ github.event_name }}" = "release" ]; then
+          echo "VERSION_TAG=${GITHUB_REF##*/v}" >> $GITHUB_ENV
+        fi
+        echo "BUILD_DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
     - name: Build
       run: |
         mkdir build
@@ -123,4 +134,3 @@ jobs:
       with:
         files: build/DiscordDrawingRPC-Setup.exe
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-
